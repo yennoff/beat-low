@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Slayyter - BEAT UP CHANEL$</title>
+    <style>
+        body {
+            background-color: white;
+            color: black;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* i love gayporn sm boy */
+        #play-pause-btn {
+            background: none;
+            border: none;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            font-size: 12rem;
+            cursor: pointer;
+            outline: none;
+            line-height: 1;
+            margin-bottom: 20px;
+            user-select: none;
+        }
+
+        /* fuck off */
+        #lyrics-container {
+            width: 100%;
+            height: 60vh;
+            overflow-y: scroll;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            scroll-behavior: smooth;
+            /* Efekt postupného mizení textu nahoře a dole */
+            mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+        }
+
+        /* ok */
+        #lyrics-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .lyric-line {
+            font-size: 2.2rem;
+            margin: 20px 0;
+            opacity: 0.15;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            width: 85%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        /* ? */
+        .lyric-line.active {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <button id="play-pause-btn">▶</button>
+    <audio id="audio-player" src="audio.mp3"></audio>
+
+    <div id="lyrics-container"></div>
+
+    <script>
+        const audio = document.getElementById('audio-player');
+        const btn = document.getElementById('play-pause-btn');
+        const container = document.getElementById('lyrics-container');
+
+        // okay bby
+        const rawLrc = `
+[00:01.12] Money, drugs, chains on my chest, that vintage Celine
+[00:03.75] Diamond grills, champagne bottles, swagger I bleed
+[00:08.02] I want sex, money, bitches, and the stickiest weed
+[00:11.38] I want a cigarette
+[00:14.52] Don't wanna talk with ease, I'm over all it
+[00:17.96] Don't try fuckin' with me, boy, I don't want it
+[00:21.59] You should go and get with her, she's better for you
+[00:25.04] Baby, I'm not that girl, don't want no lovin' from you
+[00:28.70] Don't try fuckin' with me-e, yeah, no, I don't want it
+[00:32.06] You should go and get with her, oh, uh, she's better for you
+[00:35.87] Never gonna be your girl, boy, I don't want you
+[00:39.51] I don't want lovin', all that I want is
+[00:43.38] Sex, money, drugs, chains on my chest, vintage Celine
+[00:46.68] Diamond grills, champagne bottles, I get for free
+[00:50.69] I want sex, money, bitches, and the stickiest weed
+[00:54.11] Fuck him, go into his closet, steal some of his Supreme
+[00:57.80] I want beat-up Chanels, I want new personnel
+[01:01.12] I wanna dye my hair every pretty shade of pastel
+[01:04.80] I want nasty after parties, banged up at the motel
+[01:08.57] I want beat-up Chanels, I want somethin' for real
+[01:13.12] (Don't, I don't, I don't, I don't, I)
+[01:15.43] I don't give a damn, don't you understand?
+[01:18.96] I've been down, so don't come around
+[01:22.41] I see it, know you want it, yeah
+[01:26.51] Yeah, I'm not goin' for it, it's in the best
+[01:30.04] He really want a chance, sorry, man, not a fan
+[01:33.41] He lookin' when I dance, keep your head up out your pants
+[01:37.05] I never really want it
+[01:40.43] You know that all I want is, all I want is
+[01:44.27] Money, drugs, chains on my chest, that vintage Celine
+[01:47.41] Diamond grills, champagne bottles, swagger I bleed
+[01:51.53] I want sex, money, bitches, and the stickiest weed
+[01:55.12] I want a cigarette
+[01:58.14] Money, drugs, chains on my chest, that vintage Celine
+[02:02.02] Diamond grills, champagne bottles, swagger I bleed
+[02:05.64] I want sex, money, bitches, and the stickiest weed
+[02:09.09] I want a cigarette
+[02:12.80] Sex, money, drugs, chains on my chest, vintage Celine
+[02:16.29] Diamond grills, champagne bottles, I get for free
+[02:19.88] I want sex, money, bitches, and the stickiest weed
+[02:23.36] Fuck him, go into his closet, steal some of his Supreme
+[02:27.15] I want beat-up Chanels, I want new personnel
+[02:30.80] I wanna dye my hair every pretty shade of pastel
+[02:34.15] I want nasty after parties, banged up at the motel
+[02:37.41] I want beat-up Chanels, I want somethin' for real
+[02:46.10] Beat-up Chanels, I want somethin' for real
+[02:52.56] Beat-up Chanels, I want somethin' for real
+[03:00.42] Beat-up Chanels, I want somethin' for real
+        `;
+
+        // Parser pro LRC formát
+        const lines = rawLrc.trim().split('\n').map(line => {
+            const match = line.match(/\[(\d+):(\d+\.\d+)\] (.*)/);
+            if (match) {
+                const sec = parseInt(match[1]) * 60 + parseFloat(match[2]);
+                return { time: sec, text: match[3] };
+            }
+            return null;
+        }).filter(l => l);
+
+        // Vykreslení textů do HTML
+        lines.forEach((line, index) => {
+            const div = document.createElement('div');
+            div.classList.add('lyric-line');
+            div.innerText = line.text;
+            div.onclick = () => {
+                audio.currentTime = line.time;
+                if(audio.paused) audio.play();
+                btn.innerText = 'II';
+            };
+            container.appendChild(div);
+            line.el = div;
+        });
+
+        // Přepínání Play/Pause
+        btn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                btn.innerText = 'II';
+            } else {
+                audio.pause();
+                btn.innerText = '▶';
+            }
+        });
+
+        // fuck gemini, but i couldnt do ts
+        audio.addEventListener('timeupdate', () => {
+            const curTime = audio.currentTime;
+            
+            lines.forEach((line, i) => {
+                if (curTime >= line.time && (!lines[i+1] || curTime < lines[i+1].time)) {
+                    // Odstranit aktivní třídu ze všech a přidat na aktuální
+                    document.querySelectorAll('.lyric-line').forEach(l => l.classList.remove('active'));
+                    line.el.classList.add('active');
+                    
+                    // Výpočet pozice pro scroll na střed kontejneru
+                    const scrollPos = line.el.offsetTop - container.offsetTop - (container.clientHeight / 2) + (line.el.clientHeight / 2);
+                    container.scrollTop = scrollPos;
+                }
+            });
+        });
+
+        // lemme go home
+        audio.onended = () => { btn.innerText = '▶'; };
+    </script>
+</body>
+</html>
