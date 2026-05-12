@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <title>Slayyter - BEAT UP CHANEL$</title>
     <style>
+        @keyframes blink {
+            0%, 100% {
+                background-color: white;
+            }
+            50% {
+                background-color: #f0f0f0;
+            }
+        }
+
         body {
             background-color: white;
             color: black;
@@ -16,6 +25,10 @@
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
+        }
+
+        body.playing {
+            animation: blink 0.5s infinite;
         }
 
         /* i love gayporn sm boy */
@@ -80,6 +93,7 @@
         const audio = document.getElementById('audio-player');
         const btn = document.getElementById('play-pause-btn');
         const container = document.getElementById('lyrics-container');
+        const body = document.body;
 
         // okay bby
         const rawLrc = `
@@ -162,9 +176,11 @@
             if (audio.paused) {
                 audio.play();
                 btn.innerText = 'II';
+                body.classList.add('playing');
             } else {
                 audio.pause();
                 btn.innerText = '▶';
+                body.classList.remove('playing');
             }
         });
 
@@ -186,7 +202,10 @@
         });
 
         // lemme go home
-        audio.onended = () => { btn.innerText = '▶'; };
+        audio.onended = () => { 
+            btn.innerText = '▶'; 
+            body.classList.remove('playing');
+        };
     </script>
 </body>
 </html>
